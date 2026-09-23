@@ -30,6 +30,7 @@ namespace ResolveApi.Controllers
         [HttpPost]
         async public Task<ActionResult<Ticket>> CreateTicket(Ticket ticket)
         {
+            ticket.Id = 0;
             if (ticket.Description.Contains("urgent", StringComparison.OrdinalIgnoreCase) || 
                 ticket.Description.Contains("down", StringComparison.OrdinalIgnoreCase))
             {
