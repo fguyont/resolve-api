@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ResolveApi.Data;
 using ResolveApi.Models;
+using ResolveApi.Services;
 
 namespace ResolveApi.Controllers
 {
@@ -10,10 +11,12 @@ namespace ResolveApi.Controllers
     public class TicketsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IGeminiService _geminiService;
 
-        public TicketsController(AppDbContext context)
+        public TicketsController(AppDbContext context, IGeminiService geminiService)
         {
             _context = context;
+            _geminiService = geminiService;
         }
 
         [HttpGet]
@@ -31,16 +34,25 @@ namespace ResolveApi.Controllers
         async public Task<ActionResult<Ticket>> CreateTicket(Ticket ticket)
         {
             ticket.Id = 0;
-            if (ticket.Description.Contains("urgent", StringComparison.OrdinalIgnoreCase) || 
+
+            // 1. We ask Gemini
+            var aiAnalysis = await _geminiService.AnalyzeTicketAsync(ticket.Title, ticket.Description);
+
+            // 2. We give instructions
+            if (aiAnalysis.Contains("HIGH", StringComparison.OrdinalIgnoreCase) || 
+                ticket.Description.Contains("urgent", StringComparison.OrdinalIgnoreCase) || 
                 ticket.Description.Contains("down", StringComparison.OrdinalIgnoreCase))
             {
                 ticket.Priority = TicketPriority.HIGH;
             }
 
+            // TODO : put a new attribute for AI response as ticket.AiComment = aiAnalysis;
+
             _context.Tickets.Add(ticket);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetTickets), new { id = ticket.Id }, ticket);
+            // Response
+            return CreatedAtAction(nameof(GetTickets), new { id = ticket.Id }, new { Ticket = ticket, AiSuggestion = aiAnalysis });
         }
 
         [HttpPatch("{id}/status")]
