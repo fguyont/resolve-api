@@ -10,5 +10,5 @@ A backend API built for enterprise support ticket management, featuring automate
 
 ## Key Features
 - **Ticket Lifecycle:** Create, list, and update support tickets with status tracking.
-- **AI-Powered Analysis:** Automatically analyzes newly created support tickets using Google Gemini to provide instant categorization, insights, and priority suggestions.
+- **AI-Powered Analysis (`AiAnalysis`):** Automatically processes newly created support tickets using Google Gemini to provide instant categorization and recommendations.
 - **Smart Triage Simulation:** Automatically sets ticket priority to `HIGH` based on keyword detection in the description like "urgent", "down", etc..
