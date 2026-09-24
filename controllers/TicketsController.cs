@@ -35,10 +35,10 @@ namespace ResolveApi.Controllers
         {
             ticket.Id = 0;
 
-            // 1. We ask Gemini
+            // We ask GeminiService
             var aiAnalysis = await _geminiService.AnalyzeTicketAsync(ticket.Title, ticket.Description);
 
-            // 2. We give instructions
+            // We give additional instructions
             if (aiAnalysis.Contains("HIGH", StringComparison.OrdinalIgnoreCase) || 
                 ticket.Description.Contains("urgent", StringComparison.OrdinalIgnoreCase) || 
                 ticket.Description.Contains("down", StringComparison.OrdinalIgnoreCase))
@@ -46,13 +46,12 @@ namespace ResolveApi.Controllers
                 ticket.Priority = TicketPriority.HIGH;
             }
 
-            // TODO : put a new attribute for AI response as ticket.AiComment = aiAnalysis;
-
+            ticket.AiAnalysis = aiAnalysis;
             _context.Tickets.Add(ticket);
             await _context.SaveChangesAsync();
 
             // Response
-            return CreatedAtAction(nameof(GetTickets), new { id = ticket.Id }, new { Ticket = ticket, AiSuggestion = aiAnalysis });
+            return CreatedAtAction(nameof(GetTickets), new { id = ticket.Id }, ticket);
         }
 
         [HttpPatch("{id}/status")]
