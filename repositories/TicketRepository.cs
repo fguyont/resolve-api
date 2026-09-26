@@ -20,6 +20,7 @@ namespace ResolveApi.Repositories
             {
                 query = query.Where(t => t.Status == status.Value);
             }
+            query = query.OrderByDescending(t => t.CreatedAt);
             return await query.ToListAsync();
         }
 
