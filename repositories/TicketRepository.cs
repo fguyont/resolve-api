@@ -20,6 +20,7 @@ namespace ResolveApi.Repositories
             {
                 query = query.Where(t => t.Status == status.Value);
             }
+            // TODO: Sorting by updated date could be a better idea
             query = query.OrderByDescending(t => t.CreatedAt);
             return await query.ToListAsync();
         }
