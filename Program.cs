@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using ResolveApi.Data;
 using ResolveApi.Services;
+using ResolveApi.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,10 @@ builder.Services.AddCors(options =>
                       });
 });
 
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
+
 var app = builder.Build();
 
 app.UseCors(MyAllowSpecificOrigins);
