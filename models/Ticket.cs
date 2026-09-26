@@ -1,8 +1,5 @@
 namespace ResolveApi.Models
 {
-    public enum TicketStatus { OPEN, IN_PROGRESS, RESOLVED, CLOSED }
-    public enum TicketPriority { LOW, MEDIUM, HIGH, CRITICAL }
-
     public class Ticket
     {
         public int Id { get; set; }
