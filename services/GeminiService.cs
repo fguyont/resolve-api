@@ -1,5 +1,4 @@
-using System.Net.Http.Json;
-using Microsoft.Extensions.Configuration;
+using ResolveApi.IServices;
 using ResolveApi.Models.Gemini;
 
 namespace ResolveApi.Services;
