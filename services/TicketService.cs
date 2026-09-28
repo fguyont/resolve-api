@@ -1,5 +1,6 @@
+using ResolveApi.IRepositories;
+using ResolveApi.IServices;
 using ResolveApi.Models;
-using ResolveApi.Repositories;
 
 namespace ResolveApi.Services
 {

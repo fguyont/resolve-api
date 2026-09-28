@@ -1,6 +1,6 @@
 using ResolveApi.Models;
 
-namespace ResolveApi.Services
+namespace ResolveApi.IServices
 {
     public interface ITicketService
     {
