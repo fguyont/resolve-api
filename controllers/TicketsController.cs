@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using ResolveApi.IServices;
 using ResolveApi.Models;
-using ResolveApi.Services;
 
 namespace ResolveApi.Controllers
 {
