@@ -1,6 +1,6 @@
 ﻿using ResolveApi.Models;
 
-namespace ResolveApi.Repositories
+namespace ResolveApi.IRepositories
 {
     public interface ITicketRepository
     {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ResolveApi.Models;
 using ResolveApi.Data;
+using ResolveApi.IRepositories;
 
 namespace ResolveApi.Repositories
 {
