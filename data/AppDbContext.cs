@@ -8,5 +8,6 @@ namespace ResolveApi.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Ticket> Tickets => Set<Ticket>();
+        public DbSet<User> Users { get; set; } = null!;
     }
 }
