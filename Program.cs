@@ -3,6 +3,8 @@ using System.Text.Json.Serialization;
 using ResolveApi.Data;
 using ResolveApi.Services;
 using ResolveApi.Repositories;
+using ResolveApi.IRepositories;
+using ResolveApi.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,8 +32,12 @@ builder.Services.AddCors(options =>
                       });
 });
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 
 var app = builder.Build();
