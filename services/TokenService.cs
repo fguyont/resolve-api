@@ -18,8 +18,8 @@ namespace ResolveApi.Services
 
         public string GenerateToken(User user)
         {
-            var jwtSettings = _configuration.GetSection("Jwt");
-            var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("Jwt Key not configured"));
+            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var key = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"] ?? throw new InvalidOperationException("Jwt Key not configured"));
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
