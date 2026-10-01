@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ResolveApi.Dtos.Requests;
+using ResolveApi.Dtos.Responses;
 using ResolveApi.IServices;
 
 namespace ResolveApi.Controllers
@@ -29,7 +30,7 @@ namespace ResolveApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
+        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest loginRequest)
         {
             var token = await _userService.LoginAsync(loginRequest);
             if (token == null)
@@ -37,7 +38,14 @@ namespace ResolveApi.Controllers
                 return Unauthorized(new { message = "Login failed." });
             }
 
-            return Ok(new { token = token, message = "Login succeeded." });
+            var response = new AuthResponse
+            {
+                Token = token,
+                Username = loginRequest.Email,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(30)
+            };
+
+            return Ok(response);
         }
     }
 }
