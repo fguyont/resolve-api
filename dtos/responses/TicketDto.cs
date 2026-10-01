@@ -10,5 +10,7 @@ namespace ResolveApi.Dtos.Responses
         public TicketPriority Priority { get; set; }
         public TicketStatus Status { get; set; }
         public string? AiAnalysis { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
