@@ -1,11 +1,15 @@
+using ResolveApi.Dtos.Requests;
+using ResolveApi.Dtos.Responses;
 using ResolveApi.Models;
 
 namespace ResolveApi.IServices
 {
     public interface ITicketService
     {
-        Task<IEnumerable<Ticket>> GetTicketsAsync(TicketStatus? status);
-        Task<Ticket> CreateTicketAsync(Ticket ticket);
-        Task<Ticket?> UpdateStatusAsync(int id, TicketStatus status);
+        Task<IEnumerable<TicketDto>> GetTicketsAsync(bool includeArchived = false);
+        Task<TicketDto> CreateTicketAsync(CreateTicketDto dto);
+        Task<TicketDto?> UpdateTicketContentAsync(int id, UpdateTicketDto dto);
+        Task<TicketDto?> UpdateTicketStatusAsync(int id, TicketStatus newStatus);
+        Task<TicketDto?> ArchiveTicketAsync(int id);
     }
 }

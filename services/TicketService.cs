@@ -1,3 +1,5 @@
+using ResolveApi.Dtos.Requests;
+using ResolveApi.Dtos.Responses;
 using ResolveApi.IRepositories;
 using ResolveApi.IServices;
 using ResolveApi.Models;
@@ -15,40 +17,90 @@ namespace ResolveApi.Services
             _geminiService = geminiService;
         }
 
-        public async Task<IEnumerable<Ticket>> GetTicketsAsync(TicketStatus? status)
+        public async Task<IEnumerable<TicketDto>> GetTicketsAsync(bool includeArchived = false)
         {
-            return await _ticketRepository.GetTicketsAsync(status);
+            var tickets = await _ticketRepository.GetAllAsync(includeArchived);
+            return tickets.Select(MapToDto);
         }
 
-        public async Task<Ticket> CreateTicketAsync(Ticket ticket)
+        public async Task<TicketDto> CreateTicketAsync(CreateTicketDto dto)
         {
-            ticket.Id = 0;
-
             // Gemini analysis
-            var aiAnalysis = await _geminiService.AnalyzeTicketAsync(ticket.Title, ticket.Description);
+            var aiAnalysis = await _geminiService.AnalyzeTicketAsync(dto.Title, dto.Description);
 
-            // Classification rules depending of ticket description and AI analysis
+            // Classification rules depending on ticket description and AI analysis
+            var priority = TicketPriority.MEDIUM;
             if (aiAnalysis.Contains("HIGH", StringComparison.OrdinalIgnoreCase) || 
-                ticket.Description.Contains("urgent", StringComparison.OrdinalIgnoreCase) || 
-                ticket.Description.Contains("down", StringComparison.OrdinalIgnoreCase))
+                dto.Description.Contains("urgent", StringComparison.OrdinalIgnoreCase) || 
+                dto.Description.Contains("down", StringComparison.OrdinalIgnoreCase))
             {
-                ticket.Priority = TicketPriority.HIGH;
+                priority = TicketPriority.HIGH;
             }
 
-            ticket.AiAnalysis = aiAnalysis;
-            return await _ticketRepository.AddAsync(ticket);
+            var ticket = new Ticket
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                Priority = priority,
+                Status = TicketStatus.OPEN,
+                AiAnalysis = aiAnalysis,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _ticketRepository.AddAsync(ticket);
+            return MapToDto(ticket);
         }
 
-        public async Task<Ticket?> UpdateStatusAsync(int id, TicketStatus status)
+        public async Task<TicketDto?> UpdateTicketContentAsync(int id, UpdateTicketDto dto)
         {
             var ticket = await _ticketRepository.GetByIdAsync(id);
             if (ticket == null) return null;
 
-            ticket.Status = status;
+            ticket.Title = dto.Title;
+            ticket.Description = dto.Description;
             ticket.UpdatedAt = DateTime.UtcNow;
 
             await _ticketRepository.UpdateAsync(ticket);
-            return ticket;
+            return MapToDto(ticket);
+        }
+
+        public async Task<TicketDto?> UpdateTicketStatusAsync(int id, TicketStatus newStatus)
+        {
+            var ticket = await _ticketRepository.GetByIdAsync(id);
+            if (ticket == null) return null;
+
+            ticket.Status = newStatus;
+            ticket.UpdatedAt = DateTime.UtcNow;
+
+            await _ticketRepository.UpdateAsync(ticket);
+            return MapToDto(ticket);
+        }
+
+        public async Task<TicketDto?> ArchiveTicketAsync(int id)
+        {
+            var ticket = await _ticketRepository.GetByIdAsync(id);
+            if (ticket == null) return null;
+
+            ticket.Status = TicketStatus.ARCHIVED;
+            ticket.UpdatedAt = DateTime.UtcNow;
+
+            await _ticketRepository.UpdateAsync(ticket);
+            return MapToDto(ticket);
+        }
+
+        private static TicketDto MapToDto(Ticket ticket)
+        {
+            return new TicketDto
+            {
+                Id = ticket.Id,
+                Title = ticket.Title,
+                Description = ticket.Description,
+                Status = ticket.Status,
+                Priority = ticket.Priority,
+                AiAnalysis = ticket.AiAnalysis,
+                CreatedAt = ticket.CreatedAt,
+                UpdatedAt = ticket.UpdatedAt
+            };
         }
     }
 }
