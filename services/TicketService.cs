@@ -58,6 +58,7 @@ namespace ResolveApi.Services
 
             ticket.Title = dto.Title;
             ticket.Description = dto.Description;
+            ticket.Priority = dto.Priority;
             ticket.UpdatedAt = DateTime.UtcNow;
 
             await _ticketRepository.UpdateAsync(ticket);
