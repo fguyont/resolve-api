@@ -33,7 +33,7 @@ public class GeminiService : IGeminiService
         };
 
         // Google model choosing
-        var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={_apiKey}";
+        var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={_apiKey}";
 
         // Request sending
         var response = await _httpClient.PostAsJsonAsync(url, requestBody);
