@@ -4,9 +4,9 @@ namespace ResolveApi.IRepositories
 {
     public interface ITicketRepository
     {
-        Task<IEnumerable<Ticket>> GetTicketsAsync(TicketStatus? status);
+        Task<IEnumerable<Ticket>> GetAllAsync(bool includeArchived = false);
         Task<Ticket?> GetByIdAsync(int id);
-        Task<Ticket> AddAsync(Ticket ticket);
+        Task AddAsync(Ticket ticket);
         Task UpdateAsync(Ticket ticket);
     }
 }
