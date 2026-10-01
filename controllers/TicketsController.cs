@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ResolveApi.Dtos.Requests;
+using ResolveApi.Dtos.Responses;
 using ResolveApi.IServices;
-using ResolveApi.Models;
 
 namespace ResolveApi.Controllers
 {
     [Authorize]
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class TicketsController : ControllerBase
     {
         private readonly ITicketService _ticketService;
@@ -18,26 +19,59 @@ namespace ResolveApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Ticket>>> GetTickets([FromQuery] TicketStatus? status)
+        public async Task<ActionResult<IEnumerable<TicketDto>>> GetTickets([FromQuery] bool includeArchived = false)
         {
-            var tickets = await _ticketService.GetTicketsAsync(status);
+            var tickets = await _ticketService.GetTicketsAsync(includeArchived);
             return Ok(tickets);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Ticket>> CreateTicket(Ticket ticket)
+        public async Task<ActionResult<TicketDto>> CreateTicket([FromBody] CreateTicketDto dto)
         {
-            var createdTicket = await _ticketService.CreateTicketAsync(ticket);
+            var createdTicket = await _ticketService.CreateTicketAsync(dto);
             return CreatedAtAction(nameof(GetTickets), new { id = createdTicket.Id }, createdTicket);
         }
 
-        [HttpPatch("{id}/status")]
-        public async Task<ActionResult<Ticket>> UpdateStatus(int id, [FromQuery] TicketStatus status)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<TicketDto>> UpdateTicketContent(int id, [FromBody] UpdateTicketDto dto)
         {
-            var updatedTicket = await _ticketService.UpdateStatusAsync(id, status);
-            if (updatedTicket == null) return NotFound();
+            try
+            {
+                var updatedTicket = await _ticketService.UpdateTicketContentAsync(id, dto);
+                return Ok(updatedTicket);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = "Ticket not found." });
+            }
+        }
 
-            return Ok(updatedTicket);
+        [HttpPatch("{id}/status")]
+        public async Task<ActionResult<TicketDto>> UpdateTicketStatus(int id, [FromBody] UpdateStatusDto dto)
+        {
+            try
+            {
+                var updatedTicket = await _ticketService.UpdateTicketStatusAsync(id, dto.Status);
+                return Ok(updatedTicket);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = "Key not found." });
+            }
+        }
+
+        [HttpPatch("{id}/archive")]
+        public async Task<ActionResult<TicketDto>> ArchiveTicket(int id)
+        {
+            try
+            {
+                var archivedTicket = await _ticketService.ArchiveTicketAsync(id);
+                return Ok(archivedTicket);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = "Ticket not found." });
+            }
         }
     }
 }
