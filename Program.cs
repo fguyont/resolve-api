@@ -43,6 +43,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddSwaggerGen(c =>
 {
