@@ -14,21 +14,29 @@ namespace ResolveApi.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Ticket>> GetAllAsync(bool includeArchived = false)
+        public async Task<IEnumerable<Ticket>> GetAllAsync(int? userId, bool isAgent, bool includeArchived = false)
         {
-            IQueryable<Ticket> query = _context.Tickets;
+            IQueryable<Ticket> query = _context.Tickets.Include(t => t.User);
 
             if (!includeArchived)
             {
                 query = query.Where(t => t.Status != TicketStatus.ARCHIVED);
             }
+
+            if (!isAgent && userId.HasValue)
+            {
+                query = query.Where(t => t.CreatedById == userId.Value);
+            }
+
             query = query.OrderByDescending(t => t.UpdatedAt ?? t.CreatedAt);
             return await query.ToListAsync();
         }
 
         public async Task<Ticket?> GetByIdAsync(int id)
         {
-            return await _context.Tickets.FindAsync(id);
+            return await _context.Tickets
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.Id == id);
         }
 
         public async Task AddAsync(Ticket ticket)
