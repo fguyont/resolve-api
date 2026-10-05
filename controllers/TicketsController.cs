@@ -25,6 +25,24 @@ namespace ResolveApi.Controllers
             return Ok(tickets);
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<TicketDto>> GetTicketById(int id)
+        {
+            try
+            {
+                var ticket = await _ticketService.GetTicketByIdAsync(id);
+                if (ticket == null)
+                {
+                    return NotFound();
+                }
+                return Ok(ticket);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid(); // Renvoie un 403 Forbidden si l'utilisateur n'a pas le droit d'y accéder
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<TicketDto>> CreateTicket([FromBody] CreateTicketDto dto)
         {
