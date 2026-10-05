@@ -20,22 +20,22 @@ namespace ResolveApi.Services
 
         public async Task<bool> RegisterAsync(RegisterRequest registerRequest)
         {
-            // Check if user already exists
             var existingUser = await _userRepository.GetByEmailAsync(registerRequest.Email);
             if (existingUser != null)
             {
                 return false;
             }
 
-            // User creation and password hashing
+
             var user = new User
             {
-                Email = registerRequest.Email
+                Email = registerRequest.Email,
+                Name = registerRequest.Name,
+                Role = registerRequest.Role
             };
 
             user.Password = _passwordHasher.HashPassword(user, registerRequest.ClearPassword);
 
-            // User saving
             await _userRepository.AddAsync(user);
             return true;
         }
@@ -48,7 +48,7 @@ namespace ResolveApi.Services
                 return null;
             }
 
-            var result = _passwordHasher.VerifyHashedPassword(user, user.Password, loginRequest.ClearPassword);
+            var result = _passwordHasher.VerifyHashedPassword(user, user.Password, loginRequest.Password);
             if (result == PasswordVerificationResult.Failed)
             {
                 return null;
