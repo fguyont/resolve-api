@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace ResolveApi.Models
 {
     public class Ticket
@@ -8,6 +10,10 @@ namespace ResolveApi.Models
         public TicketStatus Status { get; set; } = TicketStatus.OPEN;
         public TicketPriority Priority { get; set; } = TicketPriority.MEDIUM;
         public string? AiAnalysis { get; set; }
+        public int CreatedById { get; set; }
+        [ForeignKey("CreatedById")]
+        public User? User { get; set; }
+        public int? AssignedAgentId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
     }
