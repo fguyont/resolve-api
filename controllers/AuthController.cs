@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ResolveApi.Dtos.Requests;
 using ResolveApi.Dtos.Responses;
 using ResolveApi.IServices;
+using ResolveApi.Services;
 
 namespace ResolveApi.Controllers
 {
@@ -10,10 +11,12 @@ namespace ResolveApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public AuthController(IUserService userService)
+        public AuthController(IUserService userService, ICurrentUserService currentUserService)
         {
             _userService = userService;
+            _currentUserService = currentUserService;
         }
 
         [HttpPost("register")]
@@ -46,6 +49,19 @@ namespace ResolveApi.Controllers
             };
 
             return Ok(response);
+        }
+
+        [HttpGet("me")]
+        public IActionResult GetCurrentUserInfo()
+        {
+            var userId = _currentUserService.GetUserId();
+            var isAgent = _currentUserService.IsAgent();
+
+            return Ok(new
+            {
+                userId = userId,
+                isAgent = isAgent
+            });
         }
     }
 }
