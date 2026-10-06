@@ -12,8 +12,10 @@ namespace ResolveApi.Models
         public string? AiAnalysis { get; set; }
         public int CreatedById { get; set; }
         [ForeignKey("CreatedById")]
-        public User? User { get; set; }
+        public User? Creator { get; set; }
         public int? AssignedAgentId { get; set; }
+        [ForeignKey("AssignedAgentId")]
+        public User? AssignedAgent { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
     }
