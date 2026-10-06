@@ -26,7 +26,7 @@ namespace ResolveApi.Services
         {
             var rawId = _currentUserService.GetUserId();
             if (rawId == null) return null;
-            
+
             if (int.TryParse(rawId.ToString(), out int id))
             {
                 return id;
@@ -54,7 +54,7 @@ namespace ResolveApi.Services
 
             if (!isAgent && ticket.CreatedById != userId)
             {
-                throw new UnauthorizedAccessException("Vous n'êtes pas autorisé à consulter ce ticket.");
+                throw new UnauthorizedAccessException("You are not allowed.");
             }
 
             return MapToDto(ticket);
@@ -62,7 +62,7 @@ namespace ResolveApi.Services
 
         public async Task<TicketDto> CreateTicketAsync(CreateTicketDto dto)
         {
-            var userId = GetCurrentUserIdInt() ?? throw new UnauthorizedAccessException("Utilisateur non identifié.");
+            var userId = GetCurrentUserIdInt() ?? throw new UnauthorizedAccessException("User not identified.");
 
             var aiAnalysis = await _geminiService.AnalyzeTicketAsync(dto.Title, dto.Description);
 
@@ -92,7 +92,7 @@ namespace ResolveApi.Services
             return MapToDto(createdTicket ?? ticket);
         }
 
-        public async Task<TicketDto?> UpdateTicketContentAsync(int id, UpdateTicketDto dto)
+        public async Task<TicketDto?> UpdateTicketAsync(int id, UpdateTicketDto dto)
         {
             var ticket = await _ticketRepository.GetByIdAsync(id);
             if (ticket == null) return null;
@@ -102,45 +102,28 @@ namespace ResolveApi.Services
 
             if (!isAgent && ticket.CreatedById != userId)
             {
-                throw new UnauthorizedAccessException("Vous n'êtes pas autorisé à modifier ce ticket.");
+                throw new UnauthorizedAccessException("You are not allowed");
             }
 
             ticket.Title = dto.Title;
             ticket.Description = dto.Description;
-
+            
             if (isAgent)
             {
                 ticket.Priority = dto.Priority;
+                ticket.Status = dto.Status;
+                ticket.AssignedAgentId = dto.AssignedAgentId;
+
+                if (ticket.AssignedAgentId == null)
+                {
+                    ticket.AssignedAgentId = userId;
+                }
             }
 
             ticket.UpdatedAt = DateTime.UtcNow;
 
             await _ticketRepository.UpdateAsync(ticket);
-            
-            var updatedTicket = await _ticketRepository.GetByIdAsync(id);
-            return MapToDto(updatedTicket ?? ticket);
-        }
 
-        public async Task<TicketDto?> UpdateTicketStatusAsync(int id, TicketStatus newStatus)
-        {
-            var ticket = await _ticketRepository.GetByIdAsync(id);
-            if (ticket == null) return null;
-
-            if (!_currentUserService.IsAgent())
-            {
-                throw new UnauthorizedAccessException("Les clients ne peuvent pas modifier le statut des tickets.");
-            }
-
-            if (ticket.AssignedAgentId == null)
-            {
-                ticket.AssignedAgentId = GetCurrentUserIdInt();
-            }
-
-            ticket.Status = newStatus;
-            ticket.UpdatedAt = DateTime.UtcNow;
-
-            await _ticketRepository.UpdateAsync(ticket);
-            
             var updatedTicket = await _ticketRepository.GetByIdAsync(id);
             return MapToDto(updatedTicket ?? ticket);
         }
@@ -150,19 +133,21 @@ namespace ResolveApi.Services
             var ticket = await _ticketRepository.GetByIdAsync(id);
             if (ticket == null) return null;
 
-            var userId = GetCurrentUserIdInt();
-            bool isAgent = _currentUserService.IsAgent();
-
-            if (!isAgent && ticket.CreatedById != userId)
+            if (!_currentUserService.IsAgent())
             {
-                throw new UnauthorizedAccessException("Action non autorisée.");
+                throw new UnauthorizedAccessException("Only agents can delete tickets.");
+            }
+
+            if (ticket.AssignedAgentId == null)
+            {
+                ticket.AssignedAgentId = GetCurrentUserIdInt();
             }
 
             ticket.Status = TicketStatus.ARCHIVED;
             ticket.UpdatedAt = DateTime.UtcNow;
 
             await _ticketRepository.UpdateAsync(ticket);
-            
+
             var updatedTicket = await _ticketRepository.GetByIdAsync(id);
             return MapToDto(updatedTicket ?? ticket);
         }
@@ -178,8 +163,9 @@ namespace ResolveApi.Services
                 Priority = ticket.Priority,
                 AiAnalysis = ticket.AiAnalysis,
                 CreatedById = ticket.CreatedById,
-                CreatedByName = ticket.User?.Name ?? "Unknown",
+                CreatedByName = ticket.Creator?.Name ?? "Unknown",
                 AssignedAgentId = ticket.AssignedAgentId,
+                AssignedAgentName = ticket.AssignedAgent?.Name,
                 CreatedAt = ticket.CreatedAt,
                 UpdatedAt = ticket.UpdatedAt
             };

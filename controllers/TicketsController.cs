@@ -39,7 +39,7 @@ namespace ResolveApi.Controllers
             }
             catch (UnauthorizedAccessException)
             {
-                return Forbid(); // Renvoie un 403 Forbidden si l'utilisateur n'a pas le droit d'y accéder
+                return Forbid();
             }
         }
 
@@ -51,30 +51,20 @@ namespace ResolveApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<TicketDto>> UpdateTicketContent(int id, [FromBody] UpdateTicketDto dto)
+        public async Task<ActionResult<TicketDto>> UpdateTicket(int id, [FromBody] UpdateTicketDto dto)
         {
             try
             {
-                var updatedTicket = await _ticketService.UpdateTicketContentAsync(id, dto);
+                var updatedTicket = await _ticketService.UpdateTicketAsync(id, dto);
                 return Ok(updatedTicket);
             }
             catch (KeyNotFoundException)
             {
                 return NotFound(new { message = "Ticket not found." });
             }
-        }
-
-        [HttpPatch("{id}/status")]
-        public async Task<ActionResult<TicketDto>> UpdateTicketStatus(int id, [FromBody] UpdateStatusDto dto)
-        {
-            try
+            catch (UnauthorizedAccessException ex)
             {
-                var updatedTicket = await _ticketService.UpdateTicketStatusAsync(id, dto.Status);
-                return Ok(updatedTicket);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = "Key not found." });
+                return Forbid(ex.Message);
             }
         }
 
