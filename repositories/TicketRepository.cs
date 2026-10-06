@@ -16,7 +16,7 @@ namespace ResolveApi.Repositories
 
         public async Task<IEnumerable<Ticket>> GetAllAsync(int? userId, bool isAgent, bool includeArchived = false)
         {
-            IQueryable<Ticket> query = _context.Tickets.Include(t => t.User);
+            IQueryable<Ticket> query = _context.Tickets.Include(t => t.Creator).Include(t => t.AssignedAgent);
 
             if (!includeArchived)
             {
@@ -35,7 +35,8 @@ namespace ResolveApi.Repositories
         public async Task<Ticket?> GetByIdAsync(int id)
         {
             return await _context.Tickets
-                .Include(t => t.User)
+                .Include(t => t.Creator)
+                .Include(t => t.AssignedAgent)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
