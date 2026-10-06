@@ -14,6 +14,13 @@ namespace ResolveApi.Repositories
             _context = context;
         }
 
+        public async Task<IEnumerable<User>> GetAgentsAsync()
+        {
+            return await _context.Users
+                .Where(u => u.Role == Role.AGENT)
+                .ToListAsync();
+        }
+
         public async Task<User?> GetByEmailAsync(string email)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);

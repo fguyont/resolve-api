@@ -3,6 +3,7 @@ using ResolveApi.Models;
 using ResolveApi.Dtos.Requests;
 using ResolveApi.IRepositories;
 using ResolveApi.IServices;
+using ResolveApi.Dtos.Responses;
 
 namespace ResolveApi.Services
 {
@@ -16,6 +17,17 @@ namespace ResolveApi.Services
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
+        }
+
+        public async Task<IEnumerable<AgentDto>> GetAgentsAsync()
+        {
+            var agents = await _userRepository.GetAgentsAsync();
+
+            return agents.Select(u => new AgentDto
+            {
+                Id = u.Id,
+                Name = u.Name
+            }).ToList();
         }
 
         public async Task<bool> RegisterAsync(RegisterRequest registerRequest)
