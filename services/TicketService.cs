@@ -107,17 +107,12 @@ namespace ResolveApi.Services
 
             ticket.Title = dto.Title;
             ticket.Description = dto.Description;
-            
+
             if (isAgent)
             {
                 ticket.Priority = dto.Priority;
-                ticket.Status = dto.Status;
-                ticket.AssignedAgentId = dto.AssignedAgentId;
-
-                if (ticket.AssignedAgentId == null)
-                {
-                    ticket.AssignedAgentId = userId;
-                }
+                ticket.Status = ticket.Status == TicketStatus.OPEN ? TicketStatus.IN_PROGRESS : dto.Status;
+                ticket.AssignedAgentId = dto.AssignedAgentId ?? userId;
             }
 
             ticket.UpdatedAt = DateTime.UtcNow;
