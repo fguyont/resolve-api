@@ -72,7 +72,7 @@ namespace ResolveApi.Services
             {
                 priority = TicketPriority.HIGH;
             }
-    
+
             var ticket = new Ticket
             {
                 Title = dto.Title,
@@ -104,17 +104,22 @@ namespace ResolveApi.Services
                 throw new UnauthorizedAccessException("You are not allowed");
             }
 
+            bool hasTextChanged = ticket.Title != dto.Title || ticket.Description != dto.Description;
+
             ticket.Title = dto.Title;
             ticket.Description = dto.Description;
 
-            // New analysis after update
-            string aiAnalysis = await AnalyzeTicket(dto.Title, dto.Description);
-            
-            if (IsPriorityHigh(dto.Description, aiAnalysis) == true)
+            if (hasTextChanged == true)
             {
-                ticket.Priority = TicketPriority.HIGH;
+                // New analysis after update
+                string aiAnalysis = await AnalyzeTicket(dto.Title, dto.Description);
+
+                if (IsPriorityHigh(dto.Description, aiAnalysis) == true)
+                {
+                    ticket.Priority = TicketPriority.HIGH;
+                }
+                ticket.AiAnalysis = aiAnalysis;
             }
-            ticket.AiAnalysis = aiAnalysis;
 
             if (isAgent)
             {
@@ -179,7 +184,7 @@ namespace ResolveApi.Services
             return await _geminiService.AnalyzeTicketAsync(title, description);
         }
 
-        private static bool IsPriorityHigh (string description, string aiAnalysis)
+        private static bool IsPriorityHigh(string description, string aiAnalysis)
         {
             if (aiAnalysis.Contains("HIGH", StringComparison.OrdinalIgnoreCase) ||
                 description.Contains("urgent", StringComparison.OrdinalIgnoreCase) ||
