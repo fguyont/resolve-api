@@ -64,16 +64,15 @@ namespace ResolveApi.Services
         {
             var userId = GetCurrentUserIdInt() ?? throw new UnauthorizedAccessException("User not identified.");
 
-            var aiAnalysis = await _geminiService.AnalyzeTicketAsync(dto.Title, dto.Description);
+            // Default priority set
+            TicketPriority priority = TicketPriority.MEDIUM;
 
-            var priority = TicketPriority.MEDIUM;
-            if (aiAnalysis.Contains("HIGH", StringComparison.OrdinalIgnoreCase) ||
-                dto.Description.Contains("urgent", StringComparison.OrdinalIgnoreCase) ||
-                dto.Description.Contains("down", StringComparison.OrdinalIgnoreCase))
+            string aiAnalysis = await AnalyzeTicket(dto.Title, dto.Description);
+            if (IsPriorityHigh(dto.Description, aiAnalysis) == true)
             {
                 priority = TicketPriority.HIGH;
             }
-
+    
             var ticket = new Ticket
             {
                 Title = dto.Title,
@@ -107,6 +106,15 @@ namespace ResolveApi.Services
 
             ticket.Title = dto.Title;
             ticket.Description = dto.Description;
+
+            // New analysis after update
+            string aiAnalysis = await AnalyzeTicket(dto.Title, dto.Description);
+            
+            if (IsPriorityHigh(dto.Description, aiAnalysis) == true)
+            {
+                ticket.Priority = TicketPriority.HIGH;
+            }
+            ticket.AiAnalysis = aiAnalysis;
 
             if (isAgent)
             {
@@ -164,6 +172,22 @@ namespace ResolveApi.Services
                 CreatedAt = ticket.CreatedAt,
                 UpdatedAt = ticket.UpdatedAt
             };
+        }
+
+        private async Task<string> AnalyzeTicket(string title, string description)
+        {
+            return await _geminiService.AnalyzeTicketAsync(title, description);
+        }
+
+        private static bool IsPriorityHigh (string description, string aiAnalysis)
+        {
+            if (aiAnalysis.Contains("HIGH", StringComparison.OrdinalIgnoreCase) ||
+                description.Contains("urgent", StringComparison.OrdinalIgnoreCase) ||
+                description.Contains("down", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
